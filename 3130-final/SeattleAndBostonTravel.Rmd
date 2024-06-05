@@ -1,0 +1,193 @@
+---
+title: "Seattle and Boston Travel Research"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+food <- read.csv("BostonAndSeattleFood.csv")
+trans <- read.csv("BostonAndSeattleTransporation.csv")
+hotel <- read.csv("BostonAndSeattleHotels.csv")
+
+# This is where I separate the cities from each other and put them in their own dataset. If you feel like there is a better way, feel free to change it :)
+
+SeattleFoods <- subset(food,City %in% c("Seattle"))
+SeattleHotels <- subset(hotel,City %in% c("Seattle"))
+SeattleTrans <- subset(trans, City %in% c("Seattle"))
+BostonFoods <- subset(food,City %in% c("Boston"))
+BostonHotels <- subset(hotel,City %in% c("Boston"))
+BostonTrans <- subset(trans, City %in% c("Boston"))
+
+```
+
+## Introduction
+
+Boston and Seattle seem to be two weirdly specific selections for comparison. However, upon further analysis, picking these two cities represent both the old and the new parts of the United States.
+
+For a bit of history, Boston was the docking point of the pioneers in the United States by Captin John Smith in 1630. This was the origin of the European settlers who founded the United States. (https://www.history.com/topics/us-states/boston-massachusetts)
+
+On the other hand, Seattle was established by settlers in 1851, and called the land "New York". This was eventually changed to Seattle. Seattle was founded over two centuries after Boston. (https://www.history.com/topics/us-states/boston-massachusetts)
+
+Both these cities are prime examples of two extremes in U.s. history. However, both these cities have plenty of room for comparison. Seattle is nearly the same size as Boston, in both population, and in landmass. Both are coastal cities- just on different sides of the United States. Both cities make for the perfect comparision when dictating whether the West or the East coast is a more desirable travel experience.
+
+That is why, using public transportation, dining, and hotel statistics, we can make a broad statement regarding which side of the U.s is better for travelling: the new Gold Rush West coast, or the old colonial East coast.
+
+## Data Collection: Sources and Selection
+
+Dining
+
+Data was collected with a few simple rules applied. First, the average price of food was calculated using only entrees. If a menu did not offer full meals in favor of a la carte ordering, it was assumed that an entree was equivalent to two a la carte items. The opposite applied to group meals. If a restaurant offered group meals, upon the websites recommendation, the cost of a group meal was divided by the number of people who would be eating. All dining data was collected through Yelp! by searching Boston or Seattle, and then sorting all restaurants by Most to Least amount of reviews. This was done to avoid selecting restaurants with a small sample of reviews. The are also the most popular restaurants, most likely, so it's fair to assume that someone would dine at a location that is well known in the area, rather than a small niche location.
+
+```{r echo=FALSE}
+head(food)
+```
+City: The name of the city the hotel was gathered at.
+Rating: Out 5 stars, the average review.
+Average Food Price: Average cost of full meals at that restaurant.
+Number of Total Reviews: The amount of reviews the restaurant has received from previous customers.
+Type of Food: The type of food the restaurant is. (seafood, american, italian, etc.)
+
+Lodging
+
+Lodging data were gathered through Google Maps. Restriction upon gathering data are hotels that supports up to four people. The reason for the restriction is because hotels price can vary depending on the amount of people staying per night. To reduce bias information with other prices depending on the amount of people, the search only included four people per night. Each hotel were gather randomly and sorted by city. Here are the parameters that were gathered from the hotels.
+
+```{r echo=FALSE}
+head(hotel)
+```
+City: The name of the city the hotel was gathered at.
+Rating: Out 5 stars, the average review.
+Price: The price per night (four people).
+NumOfReview: The amount of reviews the hotel has receive from previous customers.
+
+
+Public Transportation
+
+Data relating to transportation were gathered through their transportation official website and Wikipedia. Some of the parameters that were gathered are current this year and others that are gathered in 2017. As long as the parameter are being compare within the same year as other, it would not give us a bias information due to changes and new routes from the following year after 2017. Additionally, the data were not gathered in 2019 or later because due to Covid-19 affecting the number of people using state transportation. Here are the parameters of the transportation data.
+
+```{r echo=FALSE}
+head(trans)
+```
+City: The city the data was gathered from.
+Name: The name of the transportation company.
+Type: Which type of transportation the company supports and currently active in the city.
+NumOfStops: The combine total of stops across all type of transportation within the city.
+AverageNumOfPassengerPerWeekDay: The average number of people using the transportation within a day (data were gathered in 2017).
+
+## Potential Errors In Data Collection
+
+As with any data collection, there is always potential for errors. In dining, the data points that were the most popular were used. Since this is comparative research, and the same research method was applied to two cities, the error may not be apparent. But due to potential cultural differences, Yelp! could be used in a more positive way in Seattle versus Boston, and vice versa.
+
+On the other hand, Google Maps for hotel collection could lead to some issues since Google Maps does sponsor some businesses more than others, based on an unknown algorithm. While there is nothing inherently wrong with this, we do run into a black-box situation.
+
+Finally, with public transport, as mentioned above, COVID did play a large factor into public transportation, so the data we have access to is not nearly as new as the hotel and dining datasets. This was a precaution to avoid letting political landscape affect the end results- since some governments put greater emphasis on the pandemic.
+
+## Analysis
+
+Firstly, the mean of the rating and number of reviews between the two cities are important information when comparing each of the restaurants and hotels together. Since restaurants and hotels were collected individually with their own prices, rating, and other parameters, they can be compared with differences of their mean between the two data sets. Here is the mean between the rating for restaurants and hotels.
+```{r echo=FALSE}
+t.test(SeattleFoods$Rating, BostonFoods$Rating, conf.level = 1-.005)
+```
+With a 99.5% confidence level, it can be seen that the difference of the means is between -0.1316577 and 0.4649911. This can be used a strong-of-evidence that the difference between the restaurants in both cities is between these two decimals before knowing the graphs. The test also gives us the mean of Seattle restaurants which is 4.1 and Boston with a mean of 3.933333. The differences of the means can vary between the two states, but Seattle restaurants are slightly better than Boston in terms of rating. However, since the p-value of this t-test is not less than .05, we failed to reject the null hypothesis and therefore we do not have enough evidence to support the differences of mean. We will now compute it for the hotels rating.
+
+```{r echo=FALSE}
+t.test(SeattleHotels$Rating, BostonHotels$Rating, conf.level = 1-.005)
+```
+The results of the rating of the hotels stay the same with Seattle hotels being slightly better than Boston in the average rating. The chosen confidence interval is 0.995, but still the p-value is greater, meaning the null hypothesis is proven and there are no differences between the rating of hotels.
+
+Next, we will now construct the number of reviews in restaurants and hotels between the two cities. We will compare the difference of means between the hotels, similarly to the restaurants.
+
+```{r echo=FALSE}
+t.test(SeattleFoods$Number.of.Total.Reviews, BostonFoods$Number.of.Total.Reviews, conf.level = 1-.005)
+```
+With the given statistics, the differences of the mean is massive with a 99% confidence interval. The statistics also give us the mean between the two cities and the difference between them is huge. Additionally, the p-value is lower than 0.005 which means that we have strong-of-evidence that Seattle has more reviews than Boston and the null hypothesis is rejected. In summary of number of reviews and the rating, Seattle has better restaurants than Boston.
+
+However, that is not all! We still have to compare the statistics of the hotels of the two cities.
+
+```{r echo=FALSE}
+t.test(SeattleHotels$NumOfReview, BostonHotels$NumOfReview, conf.level = 1-.005)
+```
+The boundaries are quite large in this report. The means between the two cities are quite close, but still the p-value is still greater and therefore this will yield a null hypothesis canceling our evidence that the Hotels are different from the number of reviews.
+
+Furthermore, we can also calculate the difference for prices of hotels and restaurants. This time we will compare which city has a higher cost of living for travelers. We will use the t-test experiment to calculate the differences again.
+
+```{r echo=FALSE}
+t.test(SeattleFoods$Average.Food.Price, BostonFoods$Average.Food.Price, conf.level = 1-.005)
+```
+In the results, the mean of Seattle is lower than Boston. In the previous analysis of restaurants rating, we saw that Seattle was slightly better in the rating than Boston. This gives us more support that the cost of living in Seattle is lower and serves more high-quality food than in Boston. However, the p-value did not meet the expectation of .05 or lower, so this is not good evidence to support that Seattle is cheaper in prices than Boston when comparing restaurants. We will now look at hotel prices.
+
+```{r echo=FALSE}
+t.test(SeattleHotels$Price, BostonHotels$Price, conf.level = 1-.005)
+```
+The report we got is interesting because the p-value is lower than .05 meaning that the null hypothesis is rejected and we have strong evidence that Seattle hotels are cheaper than Boston. Seattle offers less expensive prices than Boston offers and the rating of both cities' hotel are similar. So with evidence, Seattle is more visitor friendly with cost of living. We also receive the average prices in Boston which is 375.44 and Seattle with 278.65 in dollars.
+
+Next, we can also compare transportation and how regularly passengers use them. The data gathered for transportation already gives the average and the number of stops per company. To see the differences between the two, we generate just the mean to see which value is higher and transport more passengers.
+
+Mean of number of stops in Boston
+```{r echo=FALSE}
+mean(BostonTrans$NumOfStops)
+```
+Mean of number of stops in Seattle
+```{r echo=FALSE}
+mean(SeattleTrans$NumOfStops)
+```
+The number of stops between Seattle and Boston is quite large. Boston has way more stops than Seattle. Even though Seattle has two transportation companies serving the city, Seattle just has more stops allowing for more locations to arrive at. Next, we will now look at the average number of passengers per weekday. Notice this day is gathered in 2017 without the restriction of Covid-19.
+
+Mean of number of people per day in Boston
+```{r echo=FALSE}
+mean(BostonTrans$AverageNumOfPassengerPerWeekDay)
+```
+Mean of number of people per day in Seattle
+```{r echo=FALSE}
+mean(SeattleTrans$AverageNumOfPassengerPerWeekDay)
+```
+There are more people using the transportation system in Boston than in Seattle. This data can be dependent on the number of stops there are throughout the city. However, there is no way of knowing that the passenger count is affected by the number of stops throughout the city.
+
+Throughout all of the statistics values that were produced with the data set, there are some interesting findings. Seattle has way better rating and number of reviews for both restaurants and hotels, while Boston is superior in transportation.
+
+## Visualization
+
+Due to the nature of collecting reviews, also known as a non-parametric test, it is not possible to remove outliers because the data naturally will not conform to a normal distribution.
+
+However, you can still see the comparison between the sample distributions down below, which shows the overall trends between Seattle and Boston.
+
+```{r, echo=FALSE}
+
+hist(SeattleFoods$Average.Food.Price, col=rgb(0,0,1,0.2), xlab='Average Price', ylab='Frequency', main='Food Price Comparison', breaks = 20)
+hist(BostonFoods$Average.Food.Price, col=rgb(1,0,0,0.2), add=TRUE, breaks = 20)
+legend('topright', c('Seattle Food Prices', 'Boston Food Prices'), fill=c(rgb(0,0,1,0.2), rgb(1,0,0,0.2)))
+
+hist(SeattleFoods$Rating, col=rgb(0,0,1,0.2), xlab='Rating', ylab='Frequency', main='Food Rating Comparison')
+hist(BostonFoods$Rating, col=rgb(1,0,0,0.2), add=TRUE)
+legend('topright', c('Seattle Food Ratings', 'Boston Food Ratings'), fill=c(rgb(0,0,1,0.2), rgb(1,0,0,0.2)))
+
+hist(SeattleHotels$Price, col=rgb(0,0,1,0.2), xlab='Price', ylab='Frequency', main='Hotel Price Comparison', breaks = 20)
+hist(BostonHotels$Price, col=rgb(1,0,0,0.2), add=TRUE, breaks = 20)
+legend('topright', c('Seattle Hotel Prices', 'Boston Hotel Prices'), fill=c(rgb(0,0,1,0.2), rgb(1,0,0,0.2)))
+
+hist(SeattleHotels$Rating, col=rgb(0,0,1,0.2), xlab='Rating', ylab='Frequency', main='Hotel Rating Comparison')
+hist(BostonHotels$Rating, col=rgb(1,0,0,0.2), add=TRUE)
+legend('topright', c('Seattle Hotel Ratings', 'Boston Hotel Ratings'), fill=c(rgb(0,0,1,0.2), rgb(1,0,0,0.2)))
+
+sTypes <- table(SeattleFoods$Type.of.Food)
+bTypes <- table(BostonFoods$Type.of.Food)
+barplot(sTypes, main='Seattle Frequency of Food Types')
+barplot(bTypes, main='Boston Frequency of Food Types')
+
+```
+
+As stated in the analysis above, these graphs make it clear that, overall, Seattle food and hotels are far less expensive and better quality than Boston food and hotels. Clearly, there are a few restaurants and hotels that are expectations to this, such as Seattle having two restaurants that average $60 per menu item. These graphs make a clearer image that our previous statements regarding Seattle and Boston are true, seeing as how Boston's higher average cost across all restaurants is not caused by a few high-end restaurants. Instead, these averages come from Boston having a majority of prices be overall more expensive than Seattle's. The same logic applies to Boston's hotels.
+
+
+## Conclusion
+
+It appears that, from our samples, that Seattle has an overall better dining and lodging experience. However, since our data does not reject the null hypothesis for both datasets, we are left with some level of uncertainty regarding the validity of our research. Perhaps if a far larger sample was collected, we could determine if our sample is accurate to the population.
+
+However, this begs the question: why does our total review analysis reject the null hypothesis if it's the same sample size as the ratings? This is likely because the review count experience less variation, which compensates for the limited sample sizes.
+
+Luckily, while our ratings varied too much, our data regarding pricing was did appear to be accurate. The price of hotels in Seattle was $278.65 and $375.44 in Boston. That's nearly a $100 difference from our sample. Further proof that the cost of living in Seattle is lower is the $3 discrepancy in an average meal; Seattle citizens pay $19.10 on average and Boston citizens pay $22.15. With this data, it's clear that Seattle is a far more affordable city to live in, and by proxy, affordable to visit. A valid explanation for these price differences could be related to taxes in Washington and Massachusetts. Most notably, Washington has no income tax, but still taxes businesses, unlike nearly every state in the US. Once again, it's hard to claim the exact cause, but this is one of many possible causes.
+
+Boston does have 3 times as many public transportation spots. This could be due to the age of Boston; Boston has been established for far longer, which would warrant infrastructure for public transportation being established far sooner than in Seattle.
+
+In conclusion, Seattle appears to be the clear choice. The food and lodging is far cheaper. While you public transport won't always be accessible in Seattle, the money saved on food and lodging makes up for the cost of a taxi. However, I believe there is still little evidence to support if this is related to the age of the Seattle versus Boston. In order to make such a claim, we would need greater confidence in Seattle's quality of food and, sadly, Washington's unique taxing procedure makes it difficult to compare Seattle's pricing to the rest of the west coast.
+
+In the end, Seattle's affordability is likely its own unique trait that can't be compared to other places in the country, and Boston's higher pricing, on the other hand, may not be unique to Boston. The only way to determine the differences between East and West coast would be to select multiple cities across each coast and collect larger samples for each cities.

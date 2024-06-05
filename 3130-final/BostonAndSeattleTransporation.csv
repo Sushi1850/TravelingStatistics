@@ -1,0 +1,4 @@
+City,Name,Type,NumOfStops,AverageNumOfPassengerPerWeekDay
+Seattle,King County Metro,Buses/Rails,20,395000
+Seattle,Sound Transit,Rails,37,157000
+Boston,Massachusetts Bay Transportation Authority,Subway/Rails/Ferry,89,1277200
